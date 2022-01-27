@@ -128,15 +128,20 @@ final class StartViewController: UIViewController {
         setupButtons()
     }
     
+    let goButton = MapButton(color: .systemIndigo, text: "GO")
+    let clearButton = MapButton(color: .gray, text: "CLEAR")
+    
     func setupButtons() {
-        let goButton = MapButton(color: .systemIndigo, text: "GO")
-        let cancelButton = MapButton(color: .gray, text: "CANCEL")
         buttonsStack.addArrangedSubview(goButton)
-        buttonsStack.addArrangedSubview(cancelButton)
+        buttonsStack.addArrangedSubview(clearButton)
         goButton.translatesAutoresizingMaskIntoConstraints = false
         goButton.leadingAnchor.constraint(equalTo: buttonsStack.leadingAnchor).isActive = true
-        cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        cancelButton.trailingAnchor.constraint(equalTo: buttonsStack.trailingAnchor).isActive = true
+        clearButton.translatesAutoresizingMaskIntoConstraints = false
+        clearButton.trailingAnchor.constraint(equalTo: buttonsStack.trailingAnchor).isActive = true
+        goButton.addTarget(self, action: #selector(goButtonWasPressed), for: .touchUpInside)
+        clearButton.addTarget(self, action: #selector(clearButtonWasPressed), for: .touchUpInside)
+        disableButton(button: goButton)
+        disableButton(button: clearButton)
     }
     
     func setupStackView() {
@@ -191,11 +196,48 @@ final class StartViewController: UIViewController {
         startLocation.resignFirstResponder()
         finishLocation.resignFirstResponder()
     }
+    
+    @objc func clearButtonWasPressed(_ sender: UIButton) {
+        startLocation.text = ""
+        finishLocation.text = ""
+        disableButton(button: goButton)
+        disableButton(button: clearButton)
+    }
+    
+    @objc func goButtonWasPressed(_ sender: UIButton) {
+        print("go!")
+    }
+    
+    func disableButton(button: UIButton) {
+        button.setTitleColor(.gray, for: .disabled)
+        button.isEnabled = false
+    }
+    
+    func enableButton(button: UIButton) {
+        button.setTitleColor(.white, for: .normal)
+        button.isEnabled = true
+    }
 }
 
 extension StartViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
+        if (startLocation.text != "" && finishLocation.text != "") {
+            goButtonWasPressed(goButton)
+        }
         return true
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if (startLocation.text == "" || finishLocation.text == "") {
+            disableButton(button: goButton)
+        } else {
+            enableButton(button: goButton)
+        }
+        if (startLocation.text == "" && finishLocation.text == "") {
+            disableButton(button: clearButton)
+        } else {
+            enableButton(button: clearButton)
+        }
     }
 }
