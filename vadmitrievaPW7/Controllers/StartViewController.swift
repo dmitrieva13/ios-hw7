@@ -12,6 +12,7 @@ import CoreLocation
 final class StartViewController: UIViewController {
     
     var window: UIWindow?
+    var coordinates: [CLLocationCoordinate2D] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,7 +29,7 @@ final class StartViewController: UIViewController {
         textStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
         textStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 10).isActive = true
         textStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10).isActive = true
-        [startLocation, finishLocation].forEach { textField in
+        [startLocation, endLocation].forEach { textField in
             textField.delegate = self
             textStack.addArrangedSubview(textField)
         }
@@ -128,7 +129,7 @@ final class StartViewController: UIViewController {
         return control
     }()
     
-    let finishLocation: UITextField = {
+    let endLocation: UITextField = {
         let control = UITextField()
         control.backgroundColor = UIColor.lightGray
         control.textColor = UIColor.black
@@ -149,18 +150,62 @@ final class StartViewController: UIViewController {
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         startLocation.resignFirstResponder()
-        finishLocation.resignFirstResponder()
+        endLocation.resignFirstResponder()
     }
     
     @objc func clearButtonWasPressed(_ sender: UIButton) {
         startLocation.text = ""
-        finishLocation.text = ""
+        endLocation.text = ""
         disableButton(button: goButton)
         disableButton(button: clearButton)
     }
     
     @objc func goButtonWasPressed(_ sender: UIButton) {
-        print("go!")
+        guard
+            let first = startLocation.text,
+            let second = endLocation.text,
+            first != second
+            else { return }
+        let group = DispatchGroup()
+        
+        group.enter()
+        getCoordinateFrom(address: first, completion: { [weak self] coords,_ in
+            if let coords = coords {
+                self?.coordinates.append(coords)
+            }
+            group.leave()
+        })
+        
+        group.enter()
+        getCoordinateFrom(address: first, completion: { [weak self] coords,_ in
+            if let coords = coords {
+                self?.coordinates.append(coords)
+            }
+            group.leave()
+        })
+        
+        group.notify(queue: .main) {
+            DispatchQueue.main.async { [weak self] in
+            self?.buildPath()
+            }
+        }
+    }
+    
+    func buildPath() {
+        let request = MKDirections.Request()
+        let start = MKPlacemark(coordinate: coordinates[0])
+        let finish = MKPlacemark(coordinate: coordinates[1])
+        request.source = MKMapItem(placemark: start)
+        request.destination = MKMapItem(placemark: finish)
+        request.transportType = .any
+        var directions = MKDirections(request: request)
+        directions.calculate(completionHandler: {(response: MKDirections.Response!, error: Error!) in
+            if (error != nil) {
+                for route in response.routes as! [MKRoute] {
+                    self.mapView.addOverlay(route.polyline, level: MKOverlayLevel.aboveRoads)
+                }
+            }
+        })
     }
     
     func disableButton(button: UIButton) {
@@ -172,24 +217,34 @@ final class StartViewController: UIViewController {
         button.setTitleColor(.white, for: .normal)
         button.isEnabled = true
     }
+    
+    private func getCoordinateFrom(address: String, completion:
+                                   @escaping(_ coordinate: CLLocationCoordinate2D?,
+                                             _ error: Error?)
+                                   -> () ) {
+        DispatchQueue.global(qos: .background).async {
+            CLGeocoder().geocodeAddressString(address)
+            { completion($0?.first?.location?.coordinate, $1) }
+        }
+    }
 }
 
 extension StartViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        if (startLocation.text != "" && finishLocation.text != "") {
+        if (startLocation.text != "" && endLocation.text != "") {
             goButtonWasPressed(goButton)
         }
         return true
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        if (startLocation.text == "" || finishLocation.text == "") {
+        if (startLocation.text == "" || endLocation.text == "") {
             disableButton(button: goButton)
         } else {
             enableButton(button: goButton)
         }
-        if (startLocation.text == "" && finishLocation.text == "") {
+        if (startLocation.text == "" && endLocation.text == "") {
             disableButton(button: clearButton)
         } else {
             enableButton(button: clearButton)
