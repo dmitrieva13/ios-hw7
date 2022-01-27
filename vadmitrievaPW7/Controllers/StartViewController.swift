@@ -17,7 +17,6 @@ final class StartViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         view.backgroundColor = .white
-        //setupMap()
         mapView.center = view.center
         self.view.addSubview(mapView)
         setupStackView()
@@ -26,49 +25,17 @@ final class StartViewController: UIViewController {
         view.addSubview(textStack)
         textStack.spacing = 10
         textStack.translatesAutoresizingMaskIntoConstraints = false
-        textStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50).isActive = true
+        textStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
         textStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 10).isActive = true
         textStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10).isActive = true
-        //textStack.pin(to: view, [.top: 50, .left: 10, .right: 10])
         [startLocation, finishLocation].forEach { textField in
             textField.delegate = self
             textStack.addArrangedSubview(textField)
         }
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         self.view.addGestureRecognizer(tapGesture)
-        /*let locationTextView=UITextView()
-        view.addSubview(locationTextView)
-        locationTextView.backgroundColor = .white
-        locationTextView.layer.cornerRadius = 20
-        locationTextView.translatesAutoresizingMaskIntoConstraints = false
-        locationTextView.topAnchor.constraint(
-            equalTo: view.safeAreaLayoutGuide.topAnchor,
-            constant: 60
-        ).isActive = true
-        locationTextView.centerXAnchor.constraint(
-            equalTo: view.centerXAnchor
-        ).isActive = true
-        locationTextView.heightAnchor.constraint(equalToConstant: 300).isActive = true
-        locationTextView.leadingAnchor.constraint(
-            equalTo: view.leadingAnchor,
-            constant: 15
-        ).isActive = true
-        locationTextView.isUserInteractionEnabled = false*/
         
-        //let goButton = MapButton(color: .systemIndigo, text: "GO")
-        //let clearButton = MapButton(color: .systemIndigo, text: "GO")
-        //let buttonsArray = [goButton, clearButton]
-        //buttons = UIStackView(arrangedSubviews: buttonsArray)
-        
-        //buttons.addArrangedSubview(goButton)
-        //buttons.addArrangedSubview(clearButton)
-        /*goButton.translatesAutoresizingMaskIntoConstraints = false
-        goButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -100).isActive = true
-        goButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 40).isActive = true
-        clearButton.translatesAutoresizingMaskIntoConstraints = false
-        clearButton.topAnchor.constraint(equalTo: goButton.topAnchor, constant: 0).isActive = true
-        clearButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -40).isActive = true*/
-        //configureUI()
+        configureUI()
     }
     
     private let locationManager = CLLocationManager()
@@ -93,18 +60,6 @@ final class StartViewController: UIViewController {
         
         return mapView
     }()
-    
-    let map = UIView()
-    
-    func setupMap() {
-        view.addSubview(map)
-        map.translatesAutoresizingMaskIntoConstraints = false
-        map.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        map.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        map.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        map.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        map.addSubview(mapView)
-    }
 
     private func configureUI() {
         
@@ -129,7 +84,7 @@ final class StartViewController: UIViewController {
     }
     
     let goButton = MapButton(color: .systemIndigo, text: "GO")
-    let clearButton = MapButton(color: .gray, text: "CLEAR")
+    let clearButton = MapButton(color: .darkGray, text: "CLEAR")
     
     func setupButtons() {
         buttonsStack.addArrangedSubview(goButton)
