@@ -18,8 +18,10 @@ final class StartViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         view.backgroundColor = .white
+        
         mapView.center = view.center
         self.view.addSubview(mapView)
+        
         setupStackView()
         let textStack = UIStackView()
         textStack.axis = .vertical
